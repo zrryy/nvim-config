@@ -1,9 +1,9 @@
 return {
   {
-    -- Autocomplete plugin
     "saghen/blink.cmp",
     version = "1.*",
     lazy = false,
+
     opts = {
       keymap = {
         preset = "default",
@@ -21,7 +21,14 @@ return {
       },
 
       sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
+        default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+        providers = {
+          lazydev = {
+            name = "LazyDev",
+            module = "lazydev.integrations.blink",
+            score_offset = 100,
+          },
+        },
       },
     },
   },
