@@ -12,9 +12,6 @@ return {
         "ts_ls",
         "pyright",
       },
-
-      -- Keep this false while learning.
-      -- We explicitly call vim.lsp.enable() ourselves below.
       automatic_enable = false,
     },
 
@@ -29,15 +26,16 @@ return {
         capabilities = blink.get_lsp_capabilities(capabilities)
       end
 
-      -- Apply these capabilities to all LSP servers.
       vim.lsp.config("*", {
         capabilities = capabilities,
       })
 
-      -- Lua config for editing your Neovim config.
       vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
+            runtime = {
+              version = "LuaJIT",
+            },
             diagnostics = {
               globals = { "vim" },
             },
@@ -51,7 +49,6 @@ return {
         },
       })
 
-      -- Explicitly enable only the servers we care about.
       vim.lsp.enable({
         "lua_ls",
         "ts_ls",
