@@ -16,24 +16,77 @@ This config uses modern Neovim APIs, including `vim.lsp.config()` and `vim.lsp.e
 
 ## Requirements
 
-Install basic tools:
+Install the core dependencies:
 
 ```bash
-brew install neovim git ripgrep fd stylua node
+brew install neovim git ripgrep fd stylua uv bun
 ```
 
-Python tooling is managed through `pyenv`:
+Install Python formatters as isolated command-line tools:
 
 ```bash
-pyenv global 3.12.x
-python -m pip install black isort
-pyenv rehash
+uv tool install black
+uv tool install isort
+uv tool update-shell
 ```
 
-JavaScript/TypeScript formatting:
+Install Prettier globally with Bun:
 
 ```bash
-npm install -g prettier
+bun add --global prettier
+```
+
+Verify that the formatters are available:
+
+```bash
+stylua --version
+black --version
+isort --version
+prettier --version
+```
+
+If Bun-installed commands are not found, ensure its global binary directory is on your `PATH`:
+
+```bash
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+```
+
+## Updating
+
+Update Neovim plugins:
+
+```vim
+:Lazy
+```
+
+Then press `U`.
+
+Update Homebrew packages:
+
+```bash
+brew update
+brew upgrade
+```
+
+Update Python tools:
+
+```bash
+uv tool upgrade --all
+```
+
+Update Prettier:
+
+```bash
+bun update --global prettier
+```
+
+Commit the resulting configuration changes:
+
+```bash
+git add .
+git commit -m "update nvim config"
+git push
 ```
 
 ## Structure
