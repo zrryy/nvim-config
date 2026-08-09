@@ -49,3 +49,28 @@ opt.updatetime = 250
 
 -- Use rounded borders for floating windows
 vim.o.winborder = "rounded"
+
+-- Tabline to show only filename
+_G.nvim_tabline = function()
+  local line = ""
+
+  for tab = 1, vim.fn.tabpagenr("$") do
+    local win = vim.fn.tabpagewinnr(tab)
+    local buf = vim.fn.tabpagebuflist(tab)[win]
+
+    local path = vim.fn.bufname(buf)
+    local name = path ~= "" and vim.fn.fnamemodify(path, ":t") or "[No Name]"
+
+    if tab == vim.fn.tabpagenr() then
+      line = line .. "%#TabLineSel#"
+    else
+      line = line .. "%#TabLine#"
+    end
+
+    line = line .. "%" .. tab .. "T " .. name .. " "
+  end
+
+  return line .. "%#TabLineFill#%T"
+end
+
+vim.o.tabline = "%!v:lua.nvim_tabline()"
