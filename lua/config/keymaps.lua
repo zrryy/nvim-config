@@ -7,6 +7,17 @@ map("n", "<leader>q", "<cmd>q<cr>", { desc = "Quit window" })
 -- Clear search highlight
 map("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "Clear search highlight" })
 
+-- Open Lazygit in a new tab
+map("n", "<leader>gg", function()
+  if vim.fn.executable("lazygit") == 0 then
+    vim.notify("lazygit is not installed or not on PATH", vim.log.levels.ERROR)
+    return
+  end
+  vim.cmd("tabnew")
+  vim.fn.termopen("lazygit")
+  vim.cmd("startinsert")
+end, { desc = "Open Lazygit" })
+
 -- Better window navigation
 map("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
 map("n", "<C-j>", "<C-w>j", { desc = "Move to lower window" })

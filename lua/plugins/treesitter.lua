@@ -9,6 +9,7 @@ return {
         "bash",
         "css",
         "html",
+        "java",
         "javascript",
         "json",
         "lua",
@@ -27,8 +28,9 @@ return {
 
       vim.api.nvim_create_autocmd("FileType", {
         pattern = parsers,
-        callback = function()
-          vim.treesitter.start()
+        callback = function(event)
+          -- Fall back to Vim syntax until a requested parser is installed.
+          pcall(vim.treesitter.start, event.buf)
         end,
       })
     end,

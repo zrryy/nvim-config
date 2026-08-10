@@ -11,6 +11,7 @@ return {
         "lua_ls",
         "ts_ls",
         "pyright",
+        "jdtls",
       },
       automatic_enable = false,
     },
@@ -28,6 +29,12 @@ return {
 
       vim.lsp.config("*", {
         capabilities = capabilities,
+      })
+
+      vim.lsp.config("jdtls", {
+        cmd_env = {
+          JAVA_HOME = "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+        },
       })
 
       vim.lsp.config("lua_ls", {
@@ -53,6 +60,7 @@ return {
         "lua_ls",
         "ts_ls",
         "pyright",
+        "jdtls",
       })
 
       vim.api.nvim_create_autocmd("LspAttach", {

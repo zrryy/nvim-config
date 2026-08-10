@@ -33,6 +33,16 @@ opt.splitbelow = true
 opt.swapfile = false
 opt.backup = false
 opt.undofile = true
+opt.autoread = true
+
+-- Refresh unmodified buffers when agents or other tools change files on disk.
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+  callback = function()
+    if vim.bo.buftype == "" then
+      vim.cmd("checktime")
+    end
+  end,
+})
 
 -- Clipboard
 opt.clipboard = "unnamedplus"
@@ -43,6 +53,34 @@ opt.completeopt = { "menu", "menuone", "noselect" }
 -- Better command-line experience
 opt.showmode = false
 opt.cmdheight = 1
+
+-- Show only filenames in the native tabline.
+_G.nvim_tabline = function()
+  local current_tab = vim.fn.tabpagenr()
+  local tab_count = vim.fn.tabpagenr("$")
+  local tabs = {}
+
+  for tab = 1, tab_count do
+    local buffers = vim.fn.tabpagebuflist(tab)
+    local window = vim.fn.tabpagewinnr(tab)
+    local buffer = buffers[window]
+    local filename = vim.fn.bufname(buffer)
+
+    if filename == "" then
+      filename = "[No Name]"
+    else
+      filename = vim.fn.fnamemodify(filename, ":t")
+    end
+
+    local modified = vim.bo[buffer].modified and " +" or ""
+    local highlight = tab == current_tab and "%#TabLineSel#" or "%#TabLine#"
+    tabs[#tabs + 1] = string.format("%s%%%dT %d:%s%s ", highlight, tab, tab, filename, modified)
+  end
+
+  return table.concat(tabs) .. "%#TabLineFill#%T"
+end
+
+opt.tabline = "%!v:lua.nvim_tabline()"
 
 -- Faster update time for diagnostics, CursorHold, etc.
 opt.updatetime = 250
