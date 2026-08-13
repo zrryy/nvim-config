@@ -17,6 +17,7 @@ return {
         "markdown_inline",
         "python",
         "query",
+        "sql",
         "tsx",
         "typescript",
         "vim",
@@ -25,6 +26,12 @@ return {
       }
 
       require("nvim-treesitter").install(parsers)
+
+      vim.filetype.add({
+        extension = {
+          psql = "sql",
+        },
+      })
 
       vim.api.nvim_create_autocmd("FileType", {
         pattern = parsers,

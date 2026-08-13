@@ -1,5 +1,30 @@
 local map = vim.keymap.set
 
+local function in_diffview()
+  local tabpage = vim.t[vim.api.nvim_get_current_tabpage()]
+  return vim.wo.diff or (tabpage and tabpage.diffview_view_initialized == true)
+end
+
+-- Protect Diffview from broad buffer undo/redo operations.
+local function undo()
+  if in_diffview() then
+    vim.notify("Undo is disabled in Diffview", vim.log.levels.INFO)
+    return
+  end
+  vim.cmd("normal! u")
+end
+
+local function redo()
+  if in_diffview() then
+    vim.notify("Redo is disabled in Diffview", vim.log.levels.INFO)
+    return
+  end
+  vim.cmd("redo")
+end
+
+map("n", "u", undo, { desc = "Undo change" })
+map("n", "<C-r>", redo, { desc = "Redo change" })
+
 -- Save / quit
 map("n", "<leader>w", "<cmd>w<cr>", { desc = "Save file" })
 map("n", "<leader>q", "<cmd>q<cr>", { desc = "Quit window" })

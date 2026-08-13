@@ -15,7 +15,7 @@ return {
         html = { "prettier" },
         css = { "prettier" },
         markdown = { "prettier" },
-
+        sql = { "pg_format" },
         python = { "isort", "black" },
       },
 

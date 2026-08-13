@@ -12,7 +12,10 @@ return {
         },
         transparent_background = true,
         show_end_of_buffer = false,
-        integration_default = true,
+        auto_integrations = true,
+        integrations = {
+          diffview = true,
+        },
       })
 
     vim.cmd.colorscheme("catppuccin")
