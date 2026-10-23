@@ -7,6 +7,9 @@ return {
     opts = {
       keymap = {
         preset = "default",
+        ["<Tab>"] = { "select_next", "snippet_forward", "fallback" },
+        ["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" },
+        ["<CR>"] = { "accept", "fallback" },
       },
 
       appearance = {
@@ -17,6 +20,12 @@ return {
         documentation = {
           auto_show = true,
           auto_show_delay_ms = 300,
+        },
+        list = {
+          selection = {
+            preselect = false,
+            auto_insert = false,
+          },
         },
       },
 

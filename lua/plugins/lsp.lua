@@ -37,6 +37,40 @@ return {
         },
       })
 
+      -- Pyright resolves imports against whatever interpreter it finds, so an
+      -- unactivated project venv shows up as missing third-party packages.
+      local function venv_python(root)
+        local candidates = {}
+
+        if vim.env.VIRTUAL_ENV and vim.env.VIRTUAL_ENV ~= "" then
+          table.insert(candidates, vim.env.VIRTUAL_ENV)
+        end
+
+        for _, name in ipairs({ "venv", ".venv", "env", ".env" }) do
+          table.insert(candidates, vim.fs.joinpath(root or "", name))
+        end
+
+        for _, dir in ipairs(candidates) do
+          local python = vim.fs.joinpath(dir, "bin", "python")
+          if vim.uv.fs_stat(python) then
+            return python
+          end
+        end
+      end
+
+      vim.lsp.config("pyright", {
+        -- The client captures config.settings by reference before this runs, so
+        -- the table has to be mutated in place rather than replaced.
+        before_init = function(_, config)
+          local python = venv_python(config.root_dir)
+          if python then
+            config.settings = config.settings or {}
+            config.settings.python =
+              vim.tbl_deep_extend("force", config.settings.python or {}, { pythonPath = python })
+          end
+        end,
+      })
+
       vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
@@ -61,6 +95,7 @@ return {
         "ts_ls",
         "pyright",
         "jdtls",
+        "rust_analyzer",
       })
 
       vim.api.nvim_create_autocmd("LspAttach", {

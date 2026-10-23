@@ -1,8 +1,8 @@
 # Neovim Config
 
-Personal Neovim configuration built from scratch, focused on being minimal, modern, and easy to understand.
+Personal Neovim configuration built from scratch. It stays small enough to debug, and plugins are added when they solve a real editing or review problem.
 
-This config uses modern Neovim APIs, including `vim.lsp.config()` and `vim.lsp.enable()`, instead of the older `require("lspconfig").server.setup(...)` style.
+Language servers use `vim.lsp.config()` and `vim.lsp.enable()`.
 
 ## Goals
 
@@ -11,18 +11,15 @@ This config uses modern Neovim APIs, including `vim.lsp.config()` and `vim.lsp.e
 * Modular file structure
 * Modern LSP setup
 * No full Neovim distro
-* No Kickstart clone
-* Add plugins only when they solve a real problem
+* Add a plugin when it solves a real problem
 
 ## Requirements
-
-Install the core dependencies:
 
 ```bash
 brew install neovim git ripgrep fd stylua uv bun
 ```
 
-Install Python formatters as isolated command-line tools:
+Python formatters:
 
 ```bash
 uv tool install black
@@ -30,64 +27,24 @@ uv tool install isort
 uv tool update-shell
 ```
 
-Install Prettier globally with Bun:
+Prettier:
 
 ```bash
 bun add --global prettier
 ```
 
-Verify that the formatters are available:
-
-```bash
-stylua --version
-black --version
-isort --version
-prettier --version
-```
-
-If Bun-installed commands are not found, ensure its global binary directory is on your `PATH`:
+If Bun binaries are not found:
 
 ```bash
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 ```
 
-## Updating
+Rust uses the `rustup` toolchain, including `rust-analyzer`, `rustfmt`, and `clippy`. `rust-analyzer` is not installed through Mason.
 
-Update Neovim plugins:
+Java LSP (`jdtls`) is installed through Mason and runs on the Homebrew OpenJDK 21 path configured in `lua/plugins/lsp.lua`.
 
-```vim
-:Lazy
-```
-
-Then press `U`.
-
-Update Homebrew packages:
-
-```bash
-brew update
-brew upgrade
-```
-
-Update Python tools:
-
-```bash
-uv tool upgrade --all
-```
-
-Update Prettier:
-
-```bash
-bun update --global prettier
-```
-
-Commit the resulting configuration changes:
-
-```bash
-git add .
-git commit -m "update nvim config"
-git push
-```
+SQL formatting expects `pg_format` on `PATH`.
 
 ## Structure
 
@@ -98,72 +55,87 @@ git push
 │   ├── config/
 │   │   ├── options.lua
 │   │   ├── keymaps.lua
-│   │   ├── lazy.lua
-│   │   └── treesitter.lua
+│   │   └── lazy.lua
 │   └── plugins/
+│       ├── autopairs.lua
 │       ├── blink.lua
 │       ├── colorscheme.lua
 │       ├── conform.lua
+│       ├── diffview.lua
+│       ├── git.lua
+│       ├── gitsigns.lua
+│       ├── icons.lua
 │       ├── lazydev.lua
+│       ├── lazygit.lua
 │       ├── lsp.lua
-│       └── telescope.lua
+│       ├── telescope.lua
+│       ├── treesitter.lua
+│       ├── web-dev-icons.lua
+│       ├── which-key.lua
+│       └── yazi.lua
 ```
 
-## Plugin Stack
+`git.lua` is the Git and diff setup used day to day. `gitsigns.lua`, `diffview.lua`, and `lazygit.lua` are older specs that still load beside it. `icons.lua` and `web-dev-icons.lua` both configure the same icon plugin.
 
-| Plugin                 | Purpose                                        |
-| ---------------------- | ---------------------------------------------- |
-| `lazy.nvim`            | Plugin manager                                 |
-| `tokyonight.nvim`      | Colourscheme                                   |
-| `telescope.nvim`       | Fuzzy finder and project search                |
-| `blink.cmp`            | Completion engine                              |
-| `mason.nvim`           | Tool/LSP installer                             |
-| `mason-lspconfig.nvim` | Mason to LSP config bridge                     |
-| `nvim-lspconfig`       | LSP server configs                             |
-| `lazydev.nvim`         | Better Lua/Neovim config development           |
-| `conform.nvim`         | Formatting                                     |
-| Native Tree-sitter     | Basic syntax parsing without `nvim-treesitter` |
+## Plugin stack
 
-## LSP Servers
+| Plugin | Purpose |
+| --- | --- |
+| `lazy.nvim` | Plugin manager |
+| `catppuccin` | Colourscheme |
+| `telescope.nvim` | File and project search |
+| `blink.cmp` | Completion |
+| `mason.nvim` | LSP installer for Lua, TypeScript, Python, and Java |
+| `mason-lspconfig.nvim` | Mason to LSP bridge |
+| `nvim-lspconfig` | LSP server definitions |
+| `lazydev.nvim` | Lua and Neovim API completion |
+| `conform.nvim` | Formatting, including format on save |
+| `nvim-treesitter` | Syntax highlighting |
+| `nvim-autopairs` | Insert the closing bracket or quote |
+| `yazi.nvim` | File manager |
+| `gitsigns.nvim` | Hunks, stage, reset, and blame |
+| `diffview.nvim` | Side-by-side diffs and file history |
+| `snacks.nvim` | Lazygit integration |
+| `which-key.nvim` | Leader-key hints |
+| `nvim-web-devicons` | File icons |
 
-Currently enabled:
+## Editor defaults
 
-| Server    | Language                |
-| --------- | ----------------------- |
-| `lua_ls`  | Lua / Neovim config     |
-| `ts_ls`   | JavaScript / TypeScript |
-| `pyright` | Python                  |
+* Leader is Space. Local leader is `\`.
+* Indentation is 4 spaces.
+* Search is case-insensitive unless the pattern contains a capital letter.
+* Unmodified buffers reload when the file changes on disk.
 
-Check LSP status:
+## LSP servers
+
+| Server | Language | Install |
+| --- | --- | --- |
+| `lua_ls` | Lua and Neovim config | Mason |
+| `ts_ls` | JavaScript and TypeScript | Mason |
+| `pyright` | Python | Mason. Uses `VIRTUAL_ENV`, then `venv` or `.venv` |
+| `jdtls` | Java | Mason, run with OpenJDK 21 |
+| `rust_analyzer` | Rust | `rustup` |
 
 ```vim
 :checkhealth vim.lsp
-```
-
-Check active clients for current buffer:
-
-```vim
 :lua vim.print(vim.lsp.get_clients({ bufnr = 0 }))
+:LspRestart
 ```
+
+Rust warnings from `cargo check` refresh after a save. Type errors refresh after leaving Insert mode.
 
 ## Formatting
 
-Configured through `conform.nvim`.
+`:w` and `Space w` format before saving. `Space cf` formats without saving. Visual mode formats the selection.
 
-| Filetype   | Formatter            |
-| ---------- | -------------------- |
-| Lua        | `stylua`             |
-| JavaScript | `prettier`           |
-| TypeScript | `prettier`           |
-| JSX / TSX  | `prettier`           |
-| JSON       | `prettier`           |
-| YAML       | `prettier`           |
-| HTML       | `prettier`           |
-| CSS        | `prettier`           |
-| Markdown   | `prettier`           |
-| Python     | `isort` then `black` |
-
-Check formatter status:
+| Filetype | Formatter |
+| --- | --- |
+| Lua | `stylua` |
+| JavaScript, TypeScript, JSX, TSX | `prettier` |
+| JSON, YAML, HTML, CSS, Markdown | `prettier` |
+| Python | `isort`, then `black` |
+| SQL, including `.psql` | `pg_format` |
+| Rust | `rustfmt` |
 
 ```vim
 :ConformInfo
@@ -171,143 +143,119 @@ Check formatter status:
 
 ## Keymaps
 
-Leader key:
-
-| Key       | Meaning          |
-| --------- | ---------------- |
-| `<Space>` | Leader key       |
-| `\`       | Local leader key |
+Press Space and wait to see leader groups. `Space ?` shows buffer-local maps.
 
 ### General
 
-| Key         | Action                                   |
-| ----------- | ---------------------------------------- |
-| `<leader>w` | Save file                                |
-| `<leader>q` | Quit window                              |
-| `<Esc>`     | Clear search highlight                   |
-| `<C-h>`     | Move to left split                       |
-| `<C-j>`     | Move to lower split                      |
-| `<C-k>`     | Move to upper split                      |
-| `<C-l>`     | Move to right split                      |
-| `<C-Up>`    | Increase window height                   |
-| `<C-Down>`  | Decrease window height                   |
-| `<C-Left>`  | Decrease window width                    |
-| `<C-Right>` | Increase window width                    |
-| `<C-d>`     | Half-page down and centre cursor         |
-| `<C-u>`     | Half-page up and centre cursor           |
-| `n`         | Next search result and centre cursor     |
-| `N`         | Previous search result and centre cursor |
+| Key | Action |
+| --- | --- |
+| `Space w` | Format and save |
+| `Space q` | Quit the window |
+| `Esc` | Leave Insert mode, or clear search highlight in Normal mode |
+| `Ctrl-h/j/k/l` | Move between splits |
+| `Ctrl-u` / `Ctrl-d` | Half-page up or down |
+| `n` / `N` | Next or previous search match |
+| `u` / `Ctrl-r` | Undo or redo. Disabled inside Diffview |
 
-### Visual Mode
+### Editing
 
-| Key | Action                   |
-| --- | ------------------------ |
-| `J` | Move selected lines down |
-| `K` | Move selected lines up   |
+| Key | Action |
+| --- | --- |
+| `ciw` | Change the word under the cursor |
+| `c$` | Change to the end of the line |
+| `ci"` | Change inside quotes |
+| `dd` / `yy` / `p` | Delete, copy, or paste a line |
+| `"_d` | Delete without replacing the last copy |
+| `.` | Repeat the last change |
+| `{`, `(`, `[`, `"`, `'` | Insert the closing character in Insert mode |
 
-### Telescope
+### Find
 
-| Key          | Action            |
-| ------------ | ----------------- |
-| `<leader>ff` | Find files        |
-| `<leader>fg` | Live grep project |
-| `<leader>fb` | Find open buffers |
-| `<leader>fh` | Search help tags  |
-| `<leader>fr` | Recent files      |
+| Key | Action |
+| --- | --- |
+| `/text` | Search the open file |
+| `*` | Search for the word under the cursor |
+| `Space ff` | Find files |
+| `Space fg` | Search text in the project |
+| `Space fb` | Find open buffers |
+| `Space fr` | Recent files |
+| `Space fh` | Search help |
 
-### LSP
+### Code
 
-These only apply when an LSP server is attached to the current buffer.
+These apply when a language server is attached.
 
-| Key          | Action                            |
-| ------------ | --------------------------------- |
-| `gd`         | Go to definition                  |
-| `gD`         | Go to declaration                 |
-| `gr`         | Go to references                  |
-| `gi`         | Go to implementation              |
-| `K`          | Hover documentation               |
-| `<leader>rn` | Rename symbol                     |
-| `<leader>ca` | Code action                       |
-| `<leader>e`  | Show diagnostic under cursor      |
-| `[d`         | Previous diagnostic               |
-| `]d`         | Next diagnostic                   |
-| `<leader>dl` | Send diagnostics to location list |
-
-### Formatting
-
-| Key         | Action                           |
-| ----------- | -------------------------------- |
-| `<leader>f` | Format current file or selection |
+| Key | Action |
+| --- | --- |
+| `gd` / `gr` / `gi` / `gD` | Definition, references, implementation, declaration |
+| `Ctrl-o` / `Ctrl-i` | Jump backward or forward |
+| `K` | Hover documentation in Normal mode |
+| `Space rn` | Rename symbol |
+| `Space ca` | Code action |
+| `]d` / `[d` | Next or previous diagnostic |
+| `Space e` | Show the diagnostic under the cursor |
+| `Space dl` | List diagnostics. `Enter` jumps, `q` closes |
 
 ### Completion
 
-Handled by `blink.cmp`.
+Handled by `blink.cmp` in Insert mode. Suggestions are highlighted before they are inserted.
 
-Common defaults:
+| Key | Action |
+| --- | --- |
+| `Tab` / `Shift-Tab` | Next or previous suggestion |
+| `Enter` | Accept the highlighted suggestion, or insert a newline when nothing is highlighted |
+| `Ctrl-e` | Close the menu |
+| `Ctrl-n` / `Ctrl-p` | Next or previous suggestion |
 
-| Key         | Action                               |
-| ----------- | ------------------------------------ |
-| `<C-Space>` | Open completion menu / documentation |
-| `<C-n>`     | Next completion item                 |
-| `<C-p>`     | Previous completion item             |
-| `<C-y>`     | Accept completion                    |
-| `<C-e>`     | Hide completion menu                 |
-| `<C-k>`     | Toggle signature help                |
+### Files
 
-## Useful Commands
+| Key | Action |
+| --- | --- |
+| `Space fy` | Open Yazi in the current file's directory |
+| `Space fY` | Open Yazi in the working directory |
 
-| Command                | Purpose                       |
-| ---------------------- | ----------------------------- |
-| `:Lazy`                | Manage plugins                |
-| `:Mason`               | Manage LSP/tool installations |
-| `:checkhealth`         | General health check          |
-| `:checkhealth vim.lsp` | LSP health check              |
-| `:ConformInfo`         | Formatter status              |
-| `:LazyDev`             | LazyDev debug info            |
+Inside Yazi: `r` renames the selected file, and `,M` sorts by modified time with the newest first.
 
-## Updating
+### Git
 
-Update plugins:
+| Key | Action |
+| --- | --- |
+| `Space dv` | Working-tree diff |
+| `Space db` | Branch diff against the default branch |
+| `Space dh` | History of the current file |
+| `Space dq` | Close Diffview |
+| `]c` / `[c` | Next or previous hunk |
+| `Space hs` / `Space hr` | Stage or reset the hunk |
+| `Space hp` | Preview the hunk |
+| `Space hb` | Blame the current line |
+| `Space hB` | Toggle inline blame |
+| `Space gg` | Open Lazygit |
 
-```vim
-:Lazy
-```
+In Diffview, `gf` opens the real file for editing. Review panes stay read-only. Merge-conflict panes can be edited.
 
-Then press `U`.
+## Useful commands
 
-Update formatters/tools manually when needed:
+| Command | Purpose |
+| --- | --- |
+| `:Lazy` | Manage plugins. `U` updates them |
+| `:Mason` | Manage Mason-installed language servers |
+| `:checkhealth` | General health check |
+| `:ConformInfo` | Formatter status |
+| `:LspRestart` | Restart language servers |
+| `:TSUpdate` | Update Tree-sitter parsers |
+
+## Updating tools
 
 ```bash
-brew upgrade
-npm update -g prettier
-python -m pip install --upgrade black isort
+brew update && brew upgrade
+uv tool upgrade --all
+bun update --global prettier
+rustup update
 ```
 
-Commit changes:
+## Left out on purpose
 
-```bash
-git add .
-git commit -m "update nvim config"
-git push
-```
-
-## Philosophy
-
-This config avoids adding plugins too early. The rule is:
-
-```text
-One pain point → one plugin → one commit.
-```
-
-Current intentionally skipped plugins:
-
-* File tree/sidebar
-* Debug adapter / DAP
-* Extra linting framework
-* Full `nvim-treesitter` plugin setup
-* Heavy statusline
-* Bufferline
-* Session manager
-* Project manager
+* Debug adapter
+* A separate lint plugin. Diagnostics come from the language server
+* Statusline, bufferline, session manager, and project manager
 * AI plugins
-

@@ -10,12 +10,12 @@ return {
 
 		keys = {
 			{
-				"<leader>-",
+				"<leader>fy",
 				"<cmd>Yazi<cr>",
 				desc = "Open Yazi at current file",
 			},
 			{
-				"<leader>fy",
+				"<leader>fY",
 				"<cmd>Yazi cwd<cr>",
 				desc = "Open Yazi in working directory",
 			},
